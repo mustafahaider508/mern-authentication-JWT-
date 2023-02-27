@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import Divider from "@mui/material/Divider";
 import Link from 'next/link';
+import authService from "../store/actions/authService"
+import { RootState, useAppDispatch } from "../store/store";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useSelector } from 'react-redux';
+import { reset } from "@/store/actions/authSlice";
+import {useRouter } from "next/router";
 
-
-function SignUp() {
-    const [signup,setSignUp] = useState<any>({
+const  SignUp = () => {
+  const { SignUp } = authService;
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+   const { user, isSuccess ,isError} = useSelector(
+     (state: RootState) => state.auth
+   );
+   const [signup,setSignUp] = useState<any>({
         name:"",
         email:"",
         password:""
@@ -15,11 +27,48 @@ function SignUp() {
         setSignUp({ ...signup ,[e.target.name]:e.target.value});
  }
 
- const addValues = () => {
+ useEffect(() => {
+   if (isSuccess === true) {
+     toast.success("user added Successfully");
+     setTimeout(() => {
+          router.push("/login");
+     },4000)
+   }
+   if (isError === true) {
+     toast.error(user.message);
+   }
      
- }
+
+ }, [isSuccess, isError, user]);
+
+
+ const addValues = () => {
+   if (signup.name == "" || signup.email == "" || signup.password == ""){
+     toast.error("please fill form")
+   }
+   else {
+     let data = {
+       name: signup.name,
+       email: signup.email,
+       password: signup.password,
+     };
+
+     dispatch(SignUp(data));
+
+     setSignUp({
+       name: "",
+       email: "",
+       password: "",
+     });
+
+   }
+     
+
+
+}
   return (
     <div>
+      <ToastContainer />
       <div className="min-h-screen bg-orange-200 py-6 flex flex-col justify-center sm:py-12">
         <div className="relative py-3 sm:max-w-xl sm:mx-auto">
           <div className="absolute inset-0 bg-gradient-to-r from-orange-300 to-orange-600 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
@@ -78,7 +127,10 @@ function SignUp() {
                     </label>
                   </div>
                   <div className="relative">
-                    <button onClick={addValues} className="bg-orange-500 text-white rounded-md px-2 py-1">
+                    <button
+                      onClick={addValues}
+                      className="bg-orange-500 text-white rounded-md px-2 py-1"
+                    >
                       Submit
                     </button>
                   </div>
@@ -106,4 +158,4 @@ function SignUp() {
   );
 }
 
-export default SignUp
+export default  SignUp
